@@ -135,7 +135,9 @@ function App() {
 
   return (
     <div className="App">
-      <h1>{isRegister ? "Register" : "Login"}</h1>
+      {(isRegister && !token) && ( <h1>Register</h1> ) }
+      {(!isRegister && !token) && ( <h1>Login</h1> ) }
+      {(token) ? <h1>Welcome Back</h1> : ""}
       <div>
         {
           !token ? 

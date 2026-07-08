@@ -114,11 +114,26 @@ app.post('/login', async (req,res) => {
 })
 
 
-app.get("/profile", verifyToken, (req,res) => {
-    res.json({
-        message: "Welcome to the Profile",
-        user: req.user
-    })
+app.get("/profile", verifyToken, async (req,res) => {
+    try{
+        const user = await User.findById(req.user.id).select("-password");
+
+        if(!user){
+            return res.status(404).json({
+                message: "User not found"
+            })
+        }
+
+        return res.json({
+            message: "Profile fetched successfully",
+            user
+        })
+
+    }catch(err){
+        return res.status(500).json({
+            message: "Internal Server Error"
+        })
+    }
 })
 
 app.get("/dashboard", verifyToken, (req,res) => {
