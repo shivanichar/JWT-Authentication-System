@@ -8,8 +8,9 @@ function App() {
   const [email,setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [token, setToken] = useState(localStorage.getItem("token") || "")
-  const [profile, setProfile] = useState(null)
   const [data, setData] = useState(null)
+  const [isRegister, setIsRegister] = useState(true)
+  const [name, setName] = useState('')
  
   const API_URL = "http://localhost:3005"
 
@@ -32,6 +33,35 @@ function App() {
     }
     return result;
   }
+
+  const registerMethod = async () => {
+    const response = await fetch(`${API_URL}/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        password
+      })
+    })
+
+    const result = await response.json();
+    if(!response.ok){
+      alert(result.message);
+      return;
+    }
+
+    // alert(result.message)
+
+    setName("");
+    setEmail("");
+    setPassword("");
+    setIsRegister(false);
+    console.log(isRegister)
+  }
+
 
   const loginMethod = async () => {
     const response = await fetch(`${API_URL}/login`, {
@@ -57,6 +87,7 @@ function App() {
     localStorage.setItem("token",result.token)
     setEmail("")
     setPassword("")
+    setIsRegister(false)
   }
 
   const getProfile = async () => {
@@ -96,20 +127,59 @@ function App() {
     localStorage.removeItem("token");
     setToken("");
     setData(null);
+    setName("");
+    setEmail("");
+    setPassword("");
+    setIsRegister(false);
   }
 
   return (
     <div className="App">
-      <h1>JWT Token</h1>
+      <h1>{isRegister ? "Register" : "Login"}</h1>
       <div>
         {
           !token ? 
           <>
-            <input type='text' value = {email} onChange={(event) => {setEmail(event.target.value)}}/>
+            {
+              isRegister && 
+              <>
+                <input type='text' value={name} placeholder='Enter you name' onChange={(event) => {setName(event.target.value)}} />
+                <br></br><br></br>
+              </>
+            }
+            <input type='text' value = {email} placeholder='Enter you email' onChange={(event) => {setEmail(event.target.value)}}/>
             <br></br><br></br>
-            <input type='text' value = {password} onChange={(event) => {setPassword(event.target.value)}}/>
+            <input type='password' value = {password} placeholder='Enter you password' onChange={(event) => {setPassword(event.target.value)}}/>
             <br></br><br></br>
-            <button onClick={loginMethod}>Login</button>
+            {isRegister ? 
+              <button onClick={registerMethod}>Register</button> 
+              : 
+              <button onClick={loginMethod}>Login</button> 
+            }
+
+            <br></br><br></br>
+
+            <p>{
+              isRegister ? 'Already have an account? ' : "Don't have an Account ?"
+              }
+              <span
+                style={{
+                  color: "blue",
+                  cursor: "pointer",
+                  marginLeft: "5px",
+                  textDecoration: "underline"
+                }}
+                onClick={()=>{
+                  setIsRegister(!isRegister)
+                  setName("")
+                  setEmail("")
+                  setPassword("")
+                }}
+              >
+                {isRegister ? "Login" : "Register"}
+              </span>
+            </p>
+              
           </>
           :
           <>
