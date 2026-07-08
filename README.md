@@ -1,70 +1,270 @@
-# Getting Started with Create React App
+# JWT Authentication System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack authentication application built with **React**, **Node.js**, **Express**, **MongoDB**, **JWT**, and **bcrypt**.
 
-## Available Scripts
+This project demonstrates a complete authentication flow including user registration, login, password hashing, JWT-based authentication, protected routes, and MongoDB integration.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Authentication
+- User Registration
+- User Login
+- JWT Token Generation
+- Protected API Routes
+- Authentication Middleware
+- Token Expiry Handling
+- Logout Functionality
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Security
+- Password Hashing using bcrypt
+- JWT Authentication
+- Environment Variables using dotenv
+- Protected Routes using Express Middleware
+- Password never stored in plain text
+- Password excluded from API responses
 
-### `npm test`
+### Database
+- MongoDB Atlas
+- Mongoose ODM
+- User Schema
+- Unique Email Validation
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Frontend
+- React
+- Conditional Rendering
+- Login/Register Toggle
+- Local Storage Authentication
+- Automatic Logout on Token Expiry
+- Reusable API Helper (`fetchWithToken`)
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Tech Stack
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Frontend
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- React
+- JavaScript (ES6+)
+- Fetch API
 
-### `npm run eject`
+### Backend
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- Node.js
+- Express.js
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Database
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- MongoDB Atlas
+- Mongoose
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Authentication
 
-## Learn More
+- JWT (jsonwebtoken)
+- bcrypt
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Other Packages
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- dotenv
+- cors
 
-### Code Splitting
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Folder Structure
 
-### Analyzing the Bundle Size
+```
+reactjwt
+│
+├── backend
+│   ├── config
+│   │     db.js
+│   │
+│   ├── middleware
+│   │     authMiddleware.js
+│   │
+│   ├── models
+│   │     User.js
+│   │
+│   ├── .env
+│   ├── server.js
+│   └── package.json
+│
+└── frontend
+    ├── src
+    │     App.js
+    │     api.js
+    │
+    └── package.json
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+---
 
-### Making a Progressive Web App
+## Authentication Flow
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```
+User
+   │
+   ▼
+React Login/Register UI
+   │
+   ▼
+Express API
+   │
+   ▼
+MongoDB
+   │
+   ▼
+JWT Generated
+   │
+   ▼
+Stored in LocalStorage
+   │
+   ▼
+Authorization Header
+   │
+   ▼
+Authentication Middleware
+   │
+   ▼
+Protected Routes
+```
 
-### Advanced Configuration
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## API Endpoints
 
-### Deployment
+### Register
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+```
+POST /register
+```
 
-### `npm run build` fails to minify
+Registers a new user.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+
+### Login
+
+```
+POST /login
+```
+
+Authenticates the user and returns a JWT.
+
+---
+
+### Profile
+
+```
+GET /profile
+```
+
+Protected Route
+
+Returns logged-in user's profile.
+
+---
+
+### Dashboard
+
+```
+GET /dashboard
+```
+
+Protected Route
+
+---
+
+### Settings
+
+```
+GET /settings
+```
+
+Protected Route
+
+---
+
+## Environment Variables
+
+Create a `.env` file inside the backend folder.
+
+```
+PORT=3005
+
+JWT_SECRET=your_secret_key
+
+MONGO_URI=your_mongodb_connection_string
+```
+
+---
+
+## Installation
+
+### Backend
+
+```bash
+cd backend
+
+npm install
+
+npm run dev
+```
+
+---
+
+### Frontend
+
+```bash
+cd frontend
+
+npm install
+
+npm start
+```
+
+---
+
+## Security Implemented
+
+✔ Password Hashing using bcrypt
+
+✔ JWT Authentication
+
+✔ Authentication Middleware
+
+✔ Protected Routes
+
+✔ Password Hidden from Responses
+
+✔ Environment Variables
+
+✔ MongoDB User Validation
+
+---
+
+## Learning Outcomes
+
+Through this project, I learned:
+
+- React Authentication Flow
+- Conditional Rendering
+- Local Storage Management
+- Fetch API
+- Express Routing
+- Middleware
+- JWT Authentication
+- bcrypt Password Hashing
+- MongoDB Atlas
+- Mongoose Models
+- CRUD Basics
+- Environment Variables
+- API Error Handling
+- Authentication Best Practices
+
+---
+
+## Author
+
+Shivani
