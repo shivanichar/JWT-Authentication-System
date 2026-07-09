@@ -4,6 +4,7 @@ const express = require("express")
 const cors = require("cors")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const authorize = require("./middleware/authorize")
 
 const jwt_secret = process.env.JWT_SECRET
 
@@ -136,14 +137,14 @@ app.get("/profile", verifyToken, async (req,res) => {
     }
 })
 
-app.get("/dashboard", verifyToken, (req,res) => {
+app.get("/dashboard", verifyToken, authorize("admin"), (req,res) => {
     res.json({
         message: "Welcome to the Dashboard",
         user: req.user
     })
 })
 
-app.get("/settings", verifyToken, (req,res) => {
+app.get("/settings", verifyToken, authorize("admin", "user"), (req,res) => {
     res.json({
         message: "Welcome to the Settings",
         user: req.user
