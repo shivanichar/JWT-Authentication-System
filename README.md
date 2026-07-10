@@ -2,7 +2,7 @@
 
 A full-stack authentication application built with **React**, **Node.js**, **Express**, **MongoDB**, **JWT**, and **bcrypt**.
 
-This project demonstrates a complete authentication flow including user registration, login, password hashing, JWT-based authentication, protected routes, and MongoDB integration.
+This project demonstrates a complete authentication flow including user registration, login, password hashing, JWT-based authentication, protected routes, automatic token refresh, and MongoDB integration.
 
 ---
 
@@ -12,6 +12,7 @@ This project demonstrates a complete authentication flow including user registra
 - User Registration
 - User Login
 - JWT Token Generation
+- JWT Refresh Token Authentication
 - Protected API Routes
 - Authentication Middleware
 - Token Expiry Handling
@@ -19,25 +20,32 @@ This project demonstrates a complete authentication flow including user registra
 
 ### Security
 - Password Hashing using bcrypt
-- JWT Authentication
+- Access Token Expiry
+- Refresh Token Support
+- Refresh Token Rotation (RTR)
+- Role-Based Access Control (RBAC)
+- Password Never Stored in Plain Text
+- Password Excluded from API Responses
 - Environment Variables using dotenv
-- Protected Routes using Express Middleware
-- Password never stored in plain text
-- Password excluded from API responses
+- Authorization Header (Bearer Token)
 
 ### Database
 - MongoDB Atlas
 - Mongoose ODM
 - User Schema
 - Unique Email Validation
+- Refresh Token Storage
+- Automatic Timestamps
 
 ### Frontend
 - React
 - Conditional Rendering
 - Login/Register Toggle
 - Local Storage Authentication
-- Automatic Logout on Token Expiry
-- Reusable API Helper (`fetchWithToken`)
+- Automatic Token Refresh
+- Automatic Logout
+- Reusable Fetch Wrapper
+- Error Handling
 
 ---
 
@@ -82,6 +90,7 @@ reactjwt
 │   │
 │   ├── middleware
 │   │     authMiddleware.js
+│   │     authorize.js
 │   │
 │   ├── models
 │   │     User.js
@@ -99,38 +108,71 @@ reactjwt
 ```
 
 ---
-
 ## Authentication Flow
 
-```
-User
-   │
-   ▼
-React Login/Register UI
-   │
-   ▼
-Express API
-   │
-   ▼
-MongoDB
-   │
-   ▼
-JWT Generated
-   │
-   ▼
-Stored in LocalStorage
-   │
-   ▼
-Authorization Header
-   │
-   ▼
-Authentication Middleware
-   │
-   ▼
-Protected Routes
-```
+                Register
+                    │
+                    ▼
+          Password hashed (bcrypt)
+                    │
+                    ▼
+             Stored in MongoDB
+                    │
+                    ▼
+                  Login
+                    │
+                    ▼
+      Verify Email + Password
+                    │
+                    ▼
+      Generate Access Token (1 min)
+      Generate Refresh Token (2 days)
+                    │
+                    ▼
+     Refresh Token stored in MongoDB
+                    │
+                    ▼
+      Tokens stored in LocalStorage
+                    │
+                    ▼
+       Protected API Request
+                    │
+                    ▼
+      Authorization: Bearer Token
+                    │
+                    ▼
+        Authentication Middleware
+                    │
+                    ▼
+           Authorized Response
 
 ---
+## Refresh Token Flow
+Access Token Expired
+          │
+          ▼
+Frontend calls /refresh
+          │
+          ▼
+Verify Refresh Token
+          │
+          ▼
+Match Token with MongoDB
+          │
+          ▼
+Generate New Access Token
+          │
+          ▼
+Generate New Refresh Token
+          │
+          ▼
+Update MongoDB
+          │
+          ▼
+Frontend replaces old tokens
+          │
+          ▼
+Retry Original Request
 
 ## API Endpoints
 
@@ -151,6 +193,16 @@ POST /login
 ```
 
 Authenticates the user and returns a JWT.
+
+---
+
+### Refresh
+
+```
+POST /refresh
+```
+
+Refresh access token.
 
 ---
 
@@ -183,6 +235,15 @@ GET /settings
 ```
 
 Protected Route
+
+---
+### Settings
+
+```
+POST /logout
+```
+
+Logout User.
 
 ---
 
