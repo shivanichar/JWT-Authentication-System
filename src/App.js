@@ -217,74 +217,72 @@ function App() {
 
   return (
     <div className="App">
-      {(isRegister && !token) && ( <h1>Register</h1> ) }
-      {(!isRegister && !token) && ( <h1>Login</h1> ) }
-      {(token) ? <h1>Welcome Back</h1> : ""}
-      <div>
-        {
-          !token ? 
-          <>
-            {
-              isRegister && 
-              <>
-                <input type='text' value={name} placeholder='Enter you name' onChange={(event) => {setName(event.target.value)}} />
-                <br></br><br></br>
-              </>
-            }
-            <input type='text' value = {email} placeholder='Enter you email' onChange={(event) => {setEmail(event.target.value)}}/>
-            <br></br><br></br>
-            <input type='password' value = {password} placeholder='Enter you password' onChange={(event) => {setPassword(event.target.value)}}/>
-            <br></br><br></br>
-            {isRegister ? 
-              <button onClick={registerMethod}>Register</button> 
-              : 
-              <button onClick={loginMethod}>Login</button> 
-            }
-
-            <br></br><br></br>
-
-            <p>{
-              isRegister ? 'Already have an account? ' : "Don't have an Account ?"
-              }
-              <span
-                style={{
-                  color: "blue",
-                  cursor: "pointer",
-                  marginLeft: "5px",
-                  textDecoration: "underline"
-                }}
-                onClick={()=>{
-                  setIsRegister(!isRegister)
-                  setName("")
-                  setEmail("")
-                  setPassword("")
-                }}
-              >
-                {isRegister ? "Login" : "Register"}
-              </span>
-            </p>
-              
-          </>
-          :
-          <>
-            <button onClick={getProfile}>Get Profile</button>
-            <button onClick={getDashboard}>Dashboard</button>
-            <button onClick={getSettings}>Settings</button>
-            {
-              data && (
+      <div className="container">
+        {(isRegister && !token) && ( <h1>Register</h1> ) }
+        {(!isRegister && !token) && ( <h1>Login</h1> ) }
+        {(token) ? <h1>Welcome Back</h1> : ""}
+        <div>
+          {
+            !token ? 
+            <>
+              {
+                isRegister && 
                 <>
-                  <h1>Hello {data.user.name}</h1>
-                  <h3>{data.message}</h3>
-                  <p>Your associated email is {data.user.email}</p>
+                  <input className="input" type='text' value={name} placeholder='Enter you name' onChange={(event) => {setName(event.target.value)}} />
                 </>
-              )
-            }
-            
-            <button onClick={logout}>Logout</button>
-          </>
-        }
-        
+              }
+              <input className="input" type='text' value = {email} placeholder='Enter you email' onChange={(event) => {setEmail(event.target.value)}}/>
+              <input className="input" type='password' value = {password} placeholder='Enter you password' onChange={(event) => {setPassword(event.target.value)}}/>
+              {isRegister ? 
+                <button className="btn" onClick={registerMethod}>Register</button> 
+                : 
+                <button className="btn" onClick={loginMethod}>Login</button> 
+              }
+
+              <p className="switch-text">
+                {isRegister
+                  ? "Already have an account?"
+                  : "Don't have an account?"}
+
+                <span
+                  className="switch-link"
+                  onClick={() => {
+                    setIsRegister(!isRegister);
+                    setName("");
+                    setEmail("");
+                    setPassword("");
+                  }}
+                >
+                  {isRegister ? " Login" : " Register"}
+                </span>
+              </p>
+            </>
+            :
+            <>
+              <div className="button-group">
+                <button className="btn" onClick={getProfile}>Get Profile</button>
+                <button className="btn" onClick={getDashboard}>Dashboard</button>
+                <button className="btn" onClick={getSettings}>Settings</button>
+              </div>
+              {
+                data && (
+                  <>
+                    <div className="profile-card">
+                      <h2>Hello {data.user.name}</h2>
+                      <h3>{data.message}</h3>
+                      <p>Your associated email is <b>{data.user.email}</b></p>
+                    </div>
+                  </>
+                )
+              }
+              
+              <button className="logout-btn" onClick={logout}>Logout</button>
+            </>
+          }
+          
+        </div>
       </div>
+      
     </div>
   );
 }
