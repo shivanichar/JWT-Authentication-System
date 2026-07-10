@@ -6,7 +6,8 @@ const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const authorize = require("./middleware/authorize")
 
-const jwt_secret = process.env.JWT_SECRET
+const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET
 
 
 connectDb();
@@ -21,6 +22,29 @@ const User = require("./models/User")
 app.use(cors())
 app.use(express.json())
 
+const generateAccessToken = (user) => {
+    return jwt.sign(
+        {
+            id: user._id,
+            email: user.email,
+            name: user.name
+        },
+        ACCESS_SECRET,
+        {
+            expiresIn: "1m"
+        }
+    )
+}
+
+const generateRefreshToken = (user) => {
+    return jwt.sign(
+        {
+            id: user._id
+        },
+        REFRESH_SECRET,
+        {expiresIn: "2d"}
+    )
+}
 
 app.get('/', (req,res) => {
     res.send('Backend running!!!')
@@ -68,14 +92,16 @@ app.post('/login', async (req,res) => {
     console.log("Login hit")
     try{
         const {email, password} = req.body
+        console.log(email)
 
         if(!email || !password){
-            return res.status(400).jason({
+            return res.status(400).json({
                 message: "Both Email & Password is required!"
             })
         }
 
         const user = await User.findOne({email});
+        console.log(user)
 
         if(!user){
             return res.status(401).json({
@@ -83,6 +109,7 @@ app.post('/login', async (req,res) => {
             })
         }
         const isPasswordCorrect = await bcrypt.compare(password, user.password)
+        console.log(isPasswordCorrect)
 
         if(!isPasswordCorrect){
             return res.status(401).json({
@@ -91,20 +118,15 @@ app.post('/login', async (req,res) => {
         }
 
     
-        const token = jwt.sign(
-            {
-                id: user._id,
-                email: user.email,
-                name: user.name
-            },
-            jwt_secret,
-            {
-                expiresIn: "1m"
-            }
-        )
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
+        console.log(accessToken)
+        console.log(refreshToken)
+
         return res.json({
             message: 'Login successful',
-            token
+            accessToken,
+            refreshToken
         })
     } catch(err){
         return res.status(500).json({
@@ -113,7 +135,6 @@ app.post('/login', async (req,res) => {
     }
     
 })
-
 
 app.get("/profile", verifyToken, async (req,res) => {
     try{
@@ -149,6 +170,39 @@ app.get("/settings", verifyToken, authorize("admin", "user"), (req,res) => {
         message: "Welcome to the Settings",
         user: req.user
     })
+})
+
+app.post("/refresh", async (req,res) => {
+    try{
+        const {refreshToken} = req.body;
+
+        if(!refreshToken){
+            return res.status(401).json({
+                message: "Refresh Token Missing!"
+            })
+        }
+
+        const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
+        const user = await User.findById(decoded.id);
+
+        if(!user){
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        const accessToken = generateAccessToken(user);
+        return res.json({
+            accessToken
+        })
+
+
+    } catch(err){
+        return res.status(401).json({
+            message: "Invalid or expired access token"
+        })
+    }
+    
 })
 
 app.listen(3005, ()=>{

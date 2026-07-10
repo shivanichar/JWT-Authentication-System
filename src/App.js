@@ -7,7 +7,7 @@ function App() {
 
   const [email,setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [token, setToken] = useState(localStorage.getItem("token") || "")
+  const [token, setToken] = useState(localStorage.getItem("accessToken") || "")
   const [data, setData] = useState(null)
   const [isRegister, setIsRegister] = useState(true)
   const [name, setName] = useState('')
@@ -15,18 +15,45 @@ function App() {
   const API_URL = "http://localhost:3005"
 
   async function fetchWithToken(url){
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       headers: authHeader()
     });
+
+    if(response.status === 401) {
+      console.log("Access token expired!");
+      console.log("Refreshing token....")
+    
+
+      const newAccessToken = await refresh();
+
+      if(!newAccessToken){
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+
+        setToken("");
+        setData("");
+        alert("Session expired, please login again.")
+
+        throw new Error("Session expired")
+      }
+    
+
+      console.log("Token refreshed successfully.");
+
+      response = await fetch(url,{
+        headers: authHeader()
+      })
+    }
 
     const result = await response.json();
     
     if(!response.ok){
       if(response.status === 401){
-        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
         setToken("");
         setData(null);
-        alert("Session Expireed! Please login to continue.")
+        alert("Session Expired! Please login to continue.")
       }
 
       throw new Error(result.message)
@@ -53,15 +80,12 @@ function App() {
       return;
     }
 
-    // alert(result.message)
-
     setName("");
     setEmail("");
     setPassword("");
     setIsRegister(false);
     console.log(isRegister)
   }
-
 
   const loginMethod = async () => {
     const response = await fetch(`${API_URL}/login`, {
@@ -79,19 +103,21 @@ function App() {
     if(!response.ok){
       console.log(result.message);
       setToken("");
-      localStorage.removeItem("token");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
       return;
     }
-    setToken(result.token)
-    console.log("result",result.token)
-    localStorage.setItem("token",result.token)
+    setToken(result.accessToken)
+    console.log("Access result",result.accessToken)
+    console.log("Refresh result",result.refreshToken)
+    localStorage.setItem("accessToken",result.accessToken)
+    localStorage.setItem("refreshToken", result.refreshToken)
     setEmail("")
     setPassword("")
     setIsRegister(false)
   }
 
   const getProfile = async () => {
-    const tokenFromLS = localStorage.getItem("token")
 
     try{
       const result = await fetchWithToken(`${API_URL}/profile`);
@@ -123,8 +149,53 @@ function App() {
     }
   }
 
+  const refresh = async () =>{
+    try{
+      const refreshToken = localStorage.getItem("refreshToken")
+
+      if(!refreshToken){
+        throw new Error ("No refresh token found!")
+      }
+
+      const response = await fetch(`${API_URL}/refresh`,{
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          refreshToken
+        })
+
+      })
+
+      const result = await response.json();
+      if(!response.ok){
+        throw new Error("result.message")
+      }
+
+      localStorage.setItem("accessToken", result.accessToken);
+      setToken(result.accessToken)
+
+      return result.accessToken;
+
+    }catch(err){
+      console.log(err.message);
+
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
+      setToken("");
+      setData(null);
+
+      alert("Session expired. Please login again.");
+
+      return null;
+    }
+  }
+
   const logout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken")
     setToken("");
     setData(null);
     setName("");
