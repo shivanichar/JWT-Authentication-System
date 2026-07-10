@@ -174,6 +174,8 @@ function App() {
       }
 
       localStorage.setItem("accessToken", result.accessToken);
+      localStorage.setItem("refreshToken", result.refreshToken);
+
       setToken(result.accessToken)
 
       return result.accessToken;
@@ -193,15 +195,24 @@ function App() {
     }
   }
 
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken")
-    setToken("");
-    setData(null);
-    setName("");
-    setEmail("");
-    setPassword("");
-    setIsRegister(false);
+  const logout = async () => {
+    try{
+        const response = await fetch(`${API_URL}/logout`,{
+        method: "POST",
+        headers: authHeader(),
+      });
+    } catch(err){
+      console.log(err.message)
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken")
+      setToken("");
+      setData(null);
+      setName("");
+      setEmail("");
+      setPassword("");
+      setIsRegister(false);
+    }
   }
 
   return (

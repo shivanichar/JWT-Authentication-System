@@ -92,7 +92,6 @@ app.post('/login', async (req,res) => {
     console.log("Login hit")
     try{
         const {email, password} = req.body
-        console.log(email)
 
         if(!email || !password){
             return res.status(400).json({
@@ -101,7 +100,6 @@ app.post('/login', async (req,res) => {
         }
 
         const user = await User.findOne({email});
-        console.log(user)
 
         if(!user){
             return res.status(401).json({
@@ -109,7 +107,6 @@ app.post('/login', async (req,res) => {
             })
         }
         const isPasswordCorrect = await bcrypt.compare(password, user.password)
-        console.log(isPasswordCorrect)
 
         if(!isPasswordCorrect){
             return res.status(401).json({
@@ -120,8 +117,8 @@ app.post('/login', async (req,res) => {
     
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
-        console.log(accessToken)
-        console.log(refreshToken)
+        user.refreshToken = refreshToken;
+        await user.save();
 
         return res.json({
             message: 'Login successful',
@@ -191,9 +188,25 @@ app.post("/refresh", async (req,res) => {
             });
         }
 
+        if(user.refreshToken !== refreshToken){
+            return res.status(401).json({
+                message: "Refresh token invalid"
+            })
+        }
+
+
         const accessToken = generateAccessToken(user);
+        const newRefreshToken = generateRefreshToken(user);
+
+        user.refreshToken = newRefreshToken;
+        await user.save();
+
+        // user.refreshToken = refreshToken;
+        // await user.save();
+
         return res.json({
-            accessToken
+            accessToken,
+            refreshToken: newRefreshToken
         })
 
 
@@ -203,6 +216,19 @@ app.post("/refresh", async (req,res) => {
         })
     }
     
+})
+
+app.post("/logout", verifyToken, async (req,res) => {
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            refreshToken: null
+        }
+    );
+
+    res.json({
+        message: "Logged Out!"
+    })
 })
 
 app.listen(3005, ()=>{
